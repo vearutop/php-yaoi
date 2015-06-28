@@ -22,7 +22,7 @@ class PhpVarExpire extends PhpVar implements Expire
     {
         parent::__construct($dsn);
         $this->expire = new PhpVar();
-        $this->time = TimeMachine::getInstance($this->dsn->dateSource);
+        $this->time = TimeMachine::getInstance($this->settings->dateSource);
     }
 
     public function set($key, $value, $ttl)

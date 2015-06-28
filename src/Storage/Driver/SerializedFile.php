@@ -11,29 +11,24 @@ class SerializedFile extends PhpVar
     /**
      * @var Settings
      */
-    protected $dsn;
-
-    public function __construct(Settings $dsn = null)
-    {
-        $this->dsn = $dsn;
-    }
+    protected $settings;
 
     protected $fileName;
     protected $loaded;
 
     protected function load()
     {
-        $this->fileName = $this->dsn->path;
+        $this->fileName = $this->settings->path;
 
         if (file_exists($this->fileName)) {
-            if ($this->dsn->compression) {
+            if ($this->settings->compression) {
                 //$this->data = @unserialize(file_get_contents($this->fileName));
                 $this->data = @unserialize(gzuncompress(file_get_contents($this->fileName)));
             } else {
                 $this->data = @unserialize(file_get_contents($this->fileName));
             }
             if (false === $this->data) {
-                if (empty($this->dsn->ignoreErrors)) {
+                if (empty($this->settings->ignoreErrors)) {
                     throw new Exception('Bad serialized data', Exception::BAD_SERIALIZED_DATA);
                 } else {
                     $this->data = array();
@@ -85,7 +80,7 @@ class SerializedFile extends PhpVar
         if (!$this->modified) {
             return;
         }
-        if ($this->dsn->compression) {
+        if ($this->settings->compression) {
             file_put_contents($this->fileName, gzcompress(serialize($this->data)));
         } else {
             file_put_contents($this->fileName, serialize($this->data));

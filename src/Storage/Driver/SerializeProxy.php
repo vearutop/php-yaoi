@@ -45,17 +45,22 @@ class SerializeProxy extends BaseClass implements Driver
      */
     protected $storage;
 
+
+    protected $settings;
+
     /**
-     * @var Settings
+     * @param Settings|null $dsn
+     * @throws Exception
+     * @throws \Yaoi\Service\Exception
      */
     public function __construct(Settings $dsn = null)
     {
-        $this->dsn = $dsn;
+        $this->settings = $dsn ? $dsn : Storage::createSettings();
         if (empty($dsn->proxyClient)) {
             throw new Exception('proxyClient required in dsn', Exception::PROXY_REQUIRED);
         }
 
-        $this->storage = Storage::getInstance($this->dsn->proxyClient);
+        $this->storage = Storage::getInstance($this->settings->proxyClient);
     }
 
 }

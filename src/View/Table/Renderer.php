@@ -8,6 +8,7 @@ use Yaoi\View\HTML\Element;
 
 abstract class Renderer extends Element
 {
+    /** @var array|Iterator */
     protected $rows = array();
 
     public function __construct(&$rows = null)

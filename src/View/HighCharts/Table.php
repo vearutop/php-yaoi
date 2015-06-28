@@ -23,10 +23,7 @@ class Table extends Renderer
 
     public function __construct(&$rows = null)
     {
-        if (null !== $rows) {
-            $this->setRows($rows);
-        }
-
+        parent::__construct($rows);
         $this->highCharts = new HighCharts();
     }
 

@@ -127,7 +127,7 @@ class HighCharts extends BaseClass implements Renderer
 
     public function addOptions($options)
     {
-        $this->options = \Yaoi\Utils::arrayMergeRecursiveDistinct($this->options, $options);
+        $this->options = \Yaoi\Misc::arrayMergeRecursiveDistinct($this->options, $options);
         return $this;
     }
 

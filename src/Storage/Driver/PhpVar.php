@@ -10,9 +10,10 @@ use Yaoi\Storage\Settings;
 
 class PhpVar extends BaseClass implements Driver, ArrayKey, ExportImportArray
 {
+    protected $settings;
     public function __construct(Settings $dsn = null)
     {
-        $this->dsn = $dsn ? $dsn : new Settings();
+        $this->settings = $dsn ? $dsn : new Settings();
     }
 
     protected $data = array();

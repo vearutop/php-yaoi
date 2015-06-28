@@ -136,10 +136,6 @@ abstract class Service extends BaseClass
                 }
 
                 $resource = new static($settings);
-                if (!is_object($resource->settings)) {
-                    var_dump(self::$registry);
-                    throw new Exception('No settings "' . $identifier . '" ' . $serviceClassName);
-                }
                 $resource->settings->identifier = $identifier;
                 return $resource;
             }

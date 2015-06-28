@@ -70,7 +70,7 @@ class Mongo implements Driver
 
     public function keyExists($key)
     {
-        if ($res = $this->collection->findOne(array('k' => $key))) {
+        if ($this->collection->findOne(array('k' => $key))) {
             return true;
         }
         return false;

@@ -243,10 +243,6 @@ class SimpleMysql extends BaseClass
             if ($rowsCount > 1 || !$rowsCount) {
                 return false;
             }
-            if (!is_array($row)) {
-                var_dump($row);
-                die('F0ck');
-            }
 
             foreach ($row as $key => $value) {
                 if (!isset($this->$key)) {

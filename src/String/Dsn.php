@@ -33,8 +33,8 @@ class Dsn extends BaseClass
         }
 
         if (isset($p['query'])) {
-            parse_str($p['query'], $p['query']);
-            foreach ($p['query'] as $key => $value) {
+            parse_str($p['query'], $parsed);
+            foreach ($parsed as $key => $value) {
                 $this->$key = $value;
             }
         }
