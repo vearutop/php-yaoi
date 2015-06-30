@@ -111,12 +111,12 @@ class MigrationTest extends TestCase  {
     public function testGlobalMigrations() {
         return;
         // fake doc test
-        Manager::register(Service::PRIMARY, function(){
+        Manager::register(function () {
             $dsn = new Settings();
             $dsn->storage = 'serialized-file:///conf/migrations.lock';
-            $dsn->run = function(Manager $m){
+            $dsn->run = function (Manager $m) {
                 // Add migration for TASK-1234
-                $m->perform(new Migration('TASK-1234', function(){
+                $m->perform(new Migration('TASK-1234', function () {
                     Database::getInstance()->query("ALTER TABLE `table1` ADD COLUMN `field` CHAR(1) DEFAULT NULL");
                 }));
 
@@ -132,6 +132,6 @@ class MigrationTest extends TestCase  {
 
 
             return $dsn;
-        });
+        }, Service::PRIMARY);
     }
 }

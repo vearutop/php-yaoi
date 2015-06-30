@@ -18,7 +18,7 @@ abstract class Service extends BaseClass
     const FALLBACK = 'fallback';
 
     private static $registry = array();
-    public static function register($identifier, $settings) {
+    public static function register($settings, $identifier = self::PRIMARY) {
         $class = get_called_class();
         self::$registry[$class][$identifier] = $settings;
     }

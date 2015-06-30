@@ -130,4 +130,4 @@ class TimeMachine extends Service implements Able
         return $this;
     }
 }
-TimeMachine::register(Service::PRIMARY, new Service\Settings());
+TimeMachine::register(new Service\Settings(), Service::PRIMARY);

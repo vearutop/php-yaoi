@@ -9,4 +9,4 @@ class DefaultPrimary extends BasicExposed
 {
 
 }
-DefaultPrimary::register(Service::PRIMARY, null);
+DefaultPrimary::register(null);

@@ -29,7 +29,7 @@ class GetInstanceTest extends \Yaoi\Test\PHPUnit\TestCase
      * @see \Yaoi\Service::getInstance
      */
     public function testPrimary() {
-        BasicExposed::register(Service::PRIMARY, 'test');
+        BasicExposed::register('test');
         $this->assertSame(BasicExposed::getInstance(), BasicExposed::getInstance(Service::PRIMARY));
     }
 
@@ -40,8 +40,8 @@ class GetInstanceTest extends \Yaoi\Test\PHPUnit\TestCase
      * @see \Yaoi\Service::getInstance
      */
     public function testFallback() {
-        Another::register(Service::FALLBACK, 'test');
-        Another::register('known', 'test2');
+        Another::register('test', Service::FALLBACK);
+        Another::register('test2', 'known');
 
         $this->assertSame(Another::getInstance(), Another::getInstance('unknown'));
         $this->assertNotSame(Another::getInstance('unknown'), Another::getInstance('known'));
@@ -82,7 +82,7 @@ class GetInstanceTest extends \Yaoi\Test\PHPUnit\TestCase
 
 
     public function testNullSettings() {
-        NoSettings::register('test1', null);
+        NoSettings::register(null, 'test1');
         NoSettings::getInstance('test1');
     }
 
