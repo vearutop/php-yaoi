@@ -4,7 +4,6 @@ namespace Yaoi\Database\Definition;
 
 use Yaoi\BaseClass;
 use Yaoi\Database;
-use Yaoi\Database\Exception;
 use Yaoi\Log;
 use Yaoi\Sql\CreateTable;
 use Yaoi\String\Utils;
@@ -198,7 +197,7 @@ class Table extends BaseClass
 
     /**
      * @return Database\Contract
-     * @throws Exception
+     * @throws Database\Exception
      */
     public function database()
     {
@@ -208,7 +207,7 @@ class Table extends BaseClass
 
     /**
      * @return CreateTable
-     * @throws Exception
+     * @throws Database\Exception
      */
     public function getCreateTable() {
         return $this->database()->getUtility()->generateCreateTableOnDefinition($this);

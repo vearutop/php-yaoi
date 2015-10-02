@@ -10,8 +10,8 @@
          testSuiteLoaderClass="PHPUnit_Runner_StandardTestSuiteLoader">
 
     <testsuites>
-        <testsuite name="AllTests">
-            <directory>./tests/PHPUnit</directory>
+        <testsuite name="Tests">
+            <directory>./tests/src/PHPUnit</directory>
         </testsuite>
     </testsuites>
 

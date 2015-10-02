@@ -78,7 +78,7 @@ class Utility extends \Yaoi\Database\Utility
     }
 
 
-    /** @var  Tokenizer */
+    /** @var  Lexer\Parser */
     private $tokenizer;
     public function getStatementTokenizer() {
         if (null === $this->tokenizer) {

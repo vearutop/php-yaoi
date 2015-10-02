@@ -147,6 +147,7 @@ class Migration extends AbstractMigration
                 if ($this->log) {
                     $this->log->push($exception->getMessage(), Log::TYPE_ERROR);
                 }
+                throw $exception;
             }
         }
 

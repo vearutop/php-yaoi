@@ -15,6 +15,9 @@ class Log extends Service
     const TYPE_ERROR = 'e';
     const TYPE_SUCCESS = 's';
 
+    /** @var  Settings */
+    protected $settings;
+
     /**
      * @param $message
      * @param string $type
@@ -22,7 +25,12 @@ class Log extends Service
      */
     public function push($message, $type = Log::TYPE_MESSAGE)
     {
-        $this->getDriver()->push($message, $type);
+        if ($this->settings->castToString) {
+            $this->getDriver()->push((string)$message, $type);
+        }
+        else {
+            $this->getDriver()->push($message, $type);
+        }
         return $this;
     }
 

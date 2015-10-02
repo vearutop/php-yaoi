@@ -13,7 +13,7 @@ use Yaoi\Log;
 
 abstract class AbstractMigration implements Migration
 {
-    protected $dryRun = true;
+    protected $dryRun = false;
     /** @var  Log */
     protected $log;
 
@@ -27,11 +27,13 @@ abstract class AbstractMigration implements Migration
     public function setLog(Log $log = null)
     {
         $this->log = $log;
+        return $this;
     }
 
     public function setDryRun($yes = true)
     {
         $this->dryRun = $yes;
+        return $this;
     }
 
 }

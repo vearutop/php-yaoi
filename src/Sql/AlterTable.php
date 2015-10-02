@@ -103,14 +103,17 @@ class AlterTable extends Batch
         if ($this->after->disableForeignKeys) {
             $afterForeignKeys = array();
         }
-        foreach ($afterForeignKeys as $afterForeignKey) {
-            if (!isset($beforeForeignKeys[$afterForeignKey->getName()])) {
+        foreach ($afterForeignKeys as $foreignKey) {
+            if (!isset($beforeForeignKeys[$foreignKey->getName()])) {
                 $this->alterLines->commaExpr('ADD');
-                $this->alterLines->appendExpr($this->database->getUtility()->generateForeignKeyExpression($afterForeignKey));
+                $this->alterLines->appendExpr($this->database->getUtility()->generateForeignKeyExpression($foreignKey));
             }
             else {
-                unset($beforeForeignKeys[$afterForeignKey->getName()]);
+                unset($beforeForeignKeys[$foreignKey->getName()]);
             }
+        }
+        foreach ($beforeForeignKeys as $foreignKey) {
+            $this->alterLines->commaExpr('DROP FOREIGN KEY ?', new Symbol($foreignKey->getName()));
         }
 
     }

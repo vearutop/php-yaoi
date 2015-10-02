@@ -209,9 +209,9 @@ abstract class Entity extends BaseClass implements Mappable\Contract, Entity\Con
      * @var Contract[]
      */
     private static $databases = array();
-    public static function bindDatabase(Contract $database) {
+    public static function bindDatabase(Contract $database, $forceTableCacheClean = false) {
         $class = get_called_class();
-        if (!isset(self::$databases[$class]) || self::$databases[$class] !== $database) {
+        if ($forceTableCacheClean || !isset(self::$databases[$class]) || self::$databases[$class] !== $database) {
             self::$databases[$class] = $database;
             if (isset(self::$tables[$class])) {
                 unset(self::$tables[$class]);
