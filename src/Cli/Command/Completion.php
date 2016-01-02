@@ -14,36 +14,43 @@ class Completion extends Hardcoded
         $this->command = $command;
     }
 
-    protected function renderDefinition(Command\Definition $definition, $argumentsShift = 1)
+    /** @var  PrepareDefinition */
+    private $prep;
+    private $optionsValues = array();
+    private $argumentsShift;
+    private $requiredArguments = array();
+    private $optionsStrings = array();
+
+    private function prepareRequiredArguments()
     {
-        $prep = new PrepareDefinition((array)$definition->options);
-        $arguments = array(
-            $argumentsShift => '',
+        $this->requiredArguments = array(
+            $this->argumentsShift => '',
         );
 
-
-        foreach ($prep->requiredArguments as $index => $argument) {
-            $index += $argumentsShift;
+        foreach ($this->prep->requiredArguments as $index => $argument) {
+            $index += $this->argumentsShift;
 
             if ($argument->type === Option::TYPE_ENUM) {
-                $arguments[$index] = '';
+                $this->requiredArguments[$index] = '';
                 foreach ($argument->values as $value) {
-                    $arguments[$index] .= '"' . $value . '" ';
+                    $this->requiredArguments[$index] .= '"' . $value . '" ';
                 }
-            } else/*if ($argument->type === Option::TYPE_VALUE)*/ {
-                $arguments[$index] = '';
+            } else {
+                $this->requiredArguments[$index] = '';
             }
         }
-        //var_dump($definition->name, $arguments);
+    }
 
-        $optionsStrings = array(
+    private function prepareOptions()
+    {
+        $this->optionsStrings = array(
             Runner::GROUP_MISC => '',
             Runner::GROUP_DEFAULT => '',
         );
 
-        $optionsValues = array();
+        $this->optionsValues = array();
 
-        foreach ($prep->optionsArray as $option) {
+        foreach ($this->prep->optionsArray as $option) {
             if ($option instanceof Option && $option->isUnnamed) {
                 continue;
             }
@@ -52,36 +59,51 @@ class Completion extends Hardcoded
                 ? Runner::GROUP_MISC
                 : Runner::GROUP_DEFAULT;
 
-            $optionsStrings [$group] .= '"' . Runner::OPTION_NAME . $option->getName() . '" ';
+            $this->optionsStrings [$group] .= '"' . Runner::OPTION_NAME . $option->getPublicName() . '" ';
 
             if ($option->type === Option::TYPE_VALUE) {
-                $optionsValues [Runner::OPTION_NAME . $option->getName()] = '';
+                $this->optionsValues [Runner::OPTION_NAME . $option->getPublicName()] = '';
             } elseif ($option->type === Option::TYPE_ENUM) {
-                $optionsValues [Runner::OPTION_NAME . $option->getName()] = '"' . implode('" "', $option->values) . '" ';
+                $this->optionsValues [Runner::OPTION_NAME . $option->getPublicName()] = '"' . implode('" "', $option->values) . '" ';
             }
         }
 
-?>
-for opt in <?php echo $optionsStrings[Runner::GROUP_MISC] ?>; do
+    }
+
+    protected function renderDefinition(Command\Definition $definition, $argumentsShift = 1)
+    {
+        $this->prep = new PrepareDefinition((array)$definition->options);
+        $this->argumentsShift = $argumentsShift;
+
+        $this->prepareRequiredArguments();
+        $this->prepareOptions();
+
+        $this->echoBash();
+    }
+
+
+    private function echoBash() {
+        ?>
+for opt in <?php echo $this->optionsStrings[Runner::GROUP_MISC] ?>; do
     if [[ $opt == $prev ]]; then
         return 0
     fi
 done
 
-<?php foreach ($arguments as $index => $values) { ?>
+<?php foreach ($this->requiredArguments as $index => $values) { ?>
 if [ $COMP_CWORD = <?= $index ?> ]; then
     options=(<?php echo $values ?>)
 fi
 <?php } ?>
 
-if [ $COMP_CWORD = <?php echo $argumentsShift ?> ]; then
+if [ $COMP_CWORD = <?php echo $this->argumentsShift ?> ]; then
     if [[ ${cur} == -* ]] ; then
-        options+=(<?php echo $optionsStrings[Runner::GROUP_MISC] ?>)
+        options+=(<?php echo $this->optionsStrings[Runner::GROUP_MISC] ?>)
     fi
 fi
 
-<?php if ($optionsStrings[Runner::GROUP_DEFAULT]) { ?>
-for opt in <?php echo $optionsStrings[Runner::GROUP_DEFAULT] ?>; do
+<?php if ($this->optionsStrings[Runner::GROUP_DEFAULT]) { ?>
+for opt in <?php echo $this->optionsStrings[Runner::GROUP_DEFAULT] ?>; do
     skip=
     for word in "${COMP_WORDS[@]}"; do
         if [[ $opt == $word ]]; then
@@ -94,15 +116,16 @@ done
 
 <?php
     }
-        if ($optionsValues) { ?>
+        if (!empty($this->optionsValues)) { ?>
 case "$prev" in
-<?php foreach ($optionsValues as $name => $values) { ?>
+<?php foreach ($this->optionsValues as $name => $values) { ?>
     "<?php echo $name ?>")
     options=(<?php echo $values; ?>)
     ;;
 <?php } ?>
 esac
 <?php }
+
     }
 
 

@@ -4,7 +4,7 @@ namespace Yaoi;
 
 use Yaoi\Command\Definition;
 use Yaoi\Command\Option;
-use Yaoi\Command\Runner;
+use Yaoi\Command\RunnerContract;
 use Yaoi\Io\Response;
 use Yaoi\String\Utils;
 

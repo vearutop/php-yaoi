@@ -58,13 +58,22 @@ class Option extends BaseClass
     }
 
 
-    public function getName() {
+    public function getPublicName() {
         return Utils::fromCamelCase($this->name, '_');
     }
 
     public $isVariadic = false;
     public function setIsVariadic($yes = true) {
         $this->isVariadic = $yes;
+        return $this;
+    }
+
+    public $isUnnamed = false;
+    public function setIsUnnamed($isUnnamed = true) {
+        $this->isUnnamed = $isUnnamed;
+        if ($isUnnamed && self::TYPE_BOOL === $this->type) {
+            $this->type = self::TYPE_VALUE;
+        }
         return $this;
     }
 

@@ -2,7 +2,6 @@
 
 namespace Yaoi\Command;
 
-use Yaoi\Cli\Option;
 use Yaoi\Command;
 
 abstract class Application extends Command implements Command\Application\Contract
@@ -31,21 +30,7 @@ abstract class Application extends Command implements Command\Application\Contra
 
     public function performAction()
     {
-        var_dump($this);
-        return;
-
-        $commandDefinition = static::definition()->actions[$this->action];
-        /** @var Command $command */
-        $command = new $commandDefinition->commandClass();
-
-
-
-        var_dump($command);
-        /** @var Runner $runner */
-        //$runner = new $runnerClass($command);
-        //$runner->init();
-
+        // no op
+        // TODO refactor interfaces to remove this method for Application
     }
-
-
 }

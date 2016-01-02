@@ -21,8 +21,121 @@ class RequestReader extends BaseClass
     public $skipFirstTokens = 0;
 
 
-    public function read(Request $request, array $options) {
-        $def = new PrepareDefinition($options);
+    private $variadicStarted = false;
+    /** @var \Yaoi\Cli\Option */
+    private $option;
+    /** @var PrepareDefinition */
+    private $def;
+    private $valueRequired = false;
+    private $variadicValues = array();
+    /** @var StringValue */
+    private $token;
+
+
+    private function processOption()
+    {
+        if ($this->option->isRequired) {
+            unset($this->def->requiredOptions[$this->option->name]);
+        }
+
+        if ($this->option->type === Option::TYPE_BOOL) {
+            $this->values[$this->option->name] = true;
+        }
+        elseif ($this->option->isVariadic) {
+            $this->variadicStarted = true;
+            $this->variadicValues = array();
+        }
+        else {
+            $this->valueRequired = true;
+        }
+
+        if (!$this->option->isUnnamed) {
+            $this->def->optionalArguments = array();
+        }
+        else {
+            if ($this->option->isVariadic) {
+                $this->continueVariadic();
+            } else {
+                $this->valueRequired();
+            }
+        }
+    }
+
+    private function valueRequired()
+    {
+        $this->values[$this->option->name] = $this->option->validateFilterValue((string)$this->token);
+        $this->valueRequired = false;
+    }
+
+    private function finishVariadic()
+    {
+        $this->values[$this->option->name] = $this->variadicValues;
+        $this->variadicValues = array();
+        $this->variadicStarted = false;
+    }
+
+    private function continueVariadic()
+    {
+        $this->variadicValues [] = $this->option->validateFilterValue((string)$this->token);
+    }
+
+    private function processToken()
+    {
+        $optionFound = null;
+        if (($optionName = $this->token->afterStarts(Runner::OPTION_NAME)) && isset($this->def->byName[$optionName])) {
+            $optionFound = $this->def->byName[$optionName];
+        } elseif (($optionName = $this->token->afterStarts(Runner::OPTION_SHORT)) && isset($this->def->byShortName[$optionName])) {
+            $optionFound = $this->def->byShortName[$optionName];
+        }
+
+        if ($this->variadicStarted && $optionFound) {
+            if (empty($this->variadicValues)) {
+                throw new Exception('Unexpected option, value required', Exception::VALUE_REQUIRED);
+            }
+            $this->finishVariadic();
+        }
+
+        if (!empty($this->def->requiredArguments) && $optionFound) {
+            throw new Exception('Unexpected option, argument required', Exception::ARGUMENT_REQUIRED);
+        }
+
+        if ($this->variadicStarted) {
+            $this->continueVariadic();
+            return;
+        }
+
+        if ($this->valueRequired) {
+            if ($optionFound) {
+                throw new Exception('Unexpected option, value required', Exception::VALUE_REQUIRED);
+            }
+            $this->valueRequired();
+            return;
+        }
+
+        if (!empty($this->def->requiredArguments)) {
+            $this->option = array_shift($this->def->requiredArguments);
+            $this->processOption();
+            return;
+        }
+
+        if ($optionFound) {
+            $this->option = $optionFound;
+            $this->processOption();
+            return;
+        }
+
+        if ($this->def->optionalArguments) {
+            $this->option = array_shift($this->def->optionalArguments);
+            $this->processOption();
+            return;
+        }
+
+        throw new Exception('Unexpected token: ' . $this->token, Exception::UNKNOWN_OPTION);
+    }
+
+    public function read(Request $request, array $options)
+    {
+        $this->def = new PrepareDefinition($options);
 
         $tokens = $request->server()->argv;
         for ($i = 0; $i < $this->skipFirstTokens; ++$i) {
@@ -42,116 +155,29 @@ class RequestReader extends BaseClass
             }
         }
 
-        $variadicStarted = false;
-        $variadicValues = array();
-        $valueRequired = false;
-
-        /** @var \Yaoi\Cli\Option $option */
-        $option = null;
+        $this->option = null;
 
         for ($index = 0; $index < $argc; ++$index) {
-            $token = new StringValue($tokens[$index]);
-
-            $optionFound = null;
-            if (($optionName = $token->afterStarts(Runner::OPTION_NAME)) && isset($def->byName[$optionName])) {
-                $optionFound = $def->byName[$optionName];
-            } elseif (($optionName = $token->afterStarts(Runner::OPTION_SHORT)) && isset($def->byShortName[$optionName])) {
-                $optionFound = $def->byShortName[$optionName];
-            }
-
-            if ($variadicStarted && $optionFound) {
-                if (!$variadicValues) {
-                    throw new Exception('Unexpected option, value required', Exception::VALUE_REQUIRED);
-                }
-                $this->values[$option->name] = $variadicValues;
-                $variadicValues = array();
-                $variadicStarted = false;
-            }
-
-            if ($def->requiredArguments && $optionFound) {
-                throw new Exception('Unexpected option, argument required', Exception::ARGUMENT_REQUIRED);
-            }
-
-            if ($variadicStarted) {
-                $variadicValues [] = $option->validateFilterValue((string)$token);
-                continue;
-            }
-
-            if ($valueRequired) {
-                if ($optionFound) {
-                    throw new Exception('Unexpected option, value required', Exception::VALUE_REQUIRED);
-                }
-                $this->values[$option->name] = $option->validateFilterValue((string)$token);
-                $valueRequired = false;
-                continue;
-            }
-
-            if ($def->requiredArguments) {
-                /** @var Option $option */
-                $option = array_shift($def->requiredArguments);
-                $value = $option->validateFilterValue((string)$token);
-                if ($option->isVariadic) {
-                    $variadicStarted = true;
-                    $variadicValues [] = $value;
-                    continue;
-                } else {
-                    $this->values[$option->name] = $value;
-                    continue;
-                }
-            }
-
-            if ($optionFound) {
-                $option = $optionFound;
-
-                if ($option->isRequired) {
-                    unset($def->requiredOptions[$option->name]);
-                }
-
-                $def->optionalArguments = false;
-                if ($option->type === Option::TYPE_BOOL) {
-                    $this->values[$option->name] = true;
-                    continue;
-                }
-                if ($option->isVariadic) {
-                    $variadicStarted = true;
-                    continue;
-                } else {
-                    $valueRequired = true;
-                    continue;
-                }
-            }
-
-            if ($def->optionalArguments) {
-                /** @var Option $option */
-                $option = array_shift($def->optionalArguments);
-                if ($option->isVariadic) {
-                    $variadicStarted = true;
-                    $variadicValues [] = $option->validateFilterValue((string)$token);
-                    continue;
-                } else {
-                    $this->values[$option->name] = $option->validateFilterValue((string)$token);
-                    continue;
-                }
-            }
-
-            throw new Exception('Unexpected token: ' . $token, Exception::UNKNOWN_OPTION);
+            $this->token = new StringValue($tokens[$index]);
+            $this->processToken();
         }
 
-        if ($variadicStarted) {
-            $this->values[$option->name] = $variadicValues;
+        if ($this->variadicStarted) {
+            $this->finishVariadic();
         }
 
-        if ($def->requiredArguments) {
-            foreach ($def->requiredArguments as $option) {
-                throw new Exception('Missing required argument: ' . $option->getUsage(), Exception::ARGUMENT_REQUIRED);
+        if (!empty($this->def->requiredArguments)) {
+            foreach ($this->def->requiredArguments as $this->option) {
+                throw new Exception('Missing required argument: ' . $this->option->getUsage(), Exception::ARGUMENT_REQUIRED);
             }
         }
 
-        if ($def->requiredOptions) {
-            foreach ($def->requiredOptions as $option) {
-                throw new Exception('Option required: ' . $option->getUsage(), Exception::OPTION_REQUIRED);
+        if (!empty($this->def->requiredOptions)) {
+            foreach ($this->def->requiredOptions as $this->option) {
+                throw new Exception('Option required: ' . $this->option->getUsage(), Exception::OPTION_REQUIRED);
             }
         }
 
+        return $this;
     }
 }

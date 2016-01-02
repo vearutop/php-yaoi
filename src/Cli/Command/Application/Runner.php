@@ -53,22 +53,23 @@ class Runner extends \Yaoi\Cli\Command\Runner
             $command = new $commandDefinition->commandClass;
 
             $runner = new \Yaoi\Cli\Command\Runner($command);
+            $runner->commandName = $this->commandName . ' ' . $action;
+            $runner->commandVersion = $this->commandVersion;
+            $runner->commandDescription = $this->commandDescription
+                . ($runner->commandDescription ? PHP_EOL . $runner->commandDescription : '');
             $runner->skipFirstTokens = 1;
             $runner->run($request);
-            return $this;
         } elseif (!empty($this->reader->values[self::HELP])) {
             $this->showHelp();
-            return $this;
         } elseif (!empty($this->reader->values[self::VERSION])) {
             $this->showVersion();
-            return $this;
         } elseif (!empty($this->reader->values[self::BASH_COMPLETION])) {
             $this->showBashCompletion();
-            return $this;
-        } elseif (!empty($this->reader->values[self::INSTALL])) {
+        } // @codeCoverageIgnoreStart
+        elseif (!empty($this->reader->values[self::INSTALL])) {
             $this->install();
-            return $this;
         }
+        // @codeCoverageIgnoreEnd
 
         return $this;
     }

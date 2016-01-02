@@ -13,17 +13,8 @@ class Option extends \Yaoi\Command\Option
         return $this;
     }
 
-    public function getName() {
-        return Utils::fromCamelCase($this->name, '-');
-    }
-
-    public $isUnnamed = false;
-    public function setIsUnnamed($isUnnamed = true) {
-        $this->isUnnamed = $isUnnamed;
-        if ($isUnnamed && self::TYPE_BOOL === $this->type) {
-            $this->type = self::TYPE_VALUE;
-        }
-        return $this;
+    public function getPublicName() {
+        return Runner::getPublicName($this->name);
     }
 
     public $group = Runner::GROUP_DEFAULT;
@@ -39,7 +30,7 @@ class Option extends \Yaoi\Command\Option
                 $usage = Runner::OPTION_SHORT . $this->shortName;
             }
             else {
-                $usage = Runner::OPTION_NAME . $this->getName();
+                $usage = Runner::OPTION_NAME . $this->getPublicName();
             }
         }
 

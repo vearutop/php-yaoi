@@ -69,7 +69,7 @@ class PrepareDefinition extends BaseClass
                 }
 
                 if ($option->isRequired) {
-                    if ($this->optionalArguments) {
+                    if (!empty($this->optionalArguments)) {
                         throw new Exception('Non-tailing optional argument', Exception::NON_TAILING_OPTIONAL_ARGUMENT);
                     }
                     $this->requiredArguments [] = $option;
@@ -87,7 +87,7 @@ class PrepareDefinition extends BaseClass
                 $this->byShortName[$option->shortName] = $option;
             }
 
-            $this->byName[$option->getName()] = $option;
+            $this->byName[$option->getPublicName()] = $option;
         }
 
     }
@@ -100,10 +100,6 @@ class PrepareDefinition extends BaseClass
     public function initOptions()
     {
         foreach ($this->optionsArray as $name => $option) {
-            if (!$option instanceof Option) {
-                $option = Option::cast($option);
-            }
-
             if ($option instanceof Option) {
                 if ($option->isUnnamed || $option->isRequired) {
                     $this->usage .= ' ' . $option->getUsage();

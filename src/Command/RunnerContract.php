@@ -5,7 +5,7 @@ namespace Yaoi\Command;
 use Yaoi\Command;
 use Yaoi\Io\Request;
 
-interface Runner
+interface RunnerContract
 {
     public function __construct(Command $command);
 
